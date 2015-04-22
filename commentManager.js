@@ -4,6 +4,7 @@ var randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
 
 exports.getComments = function (padId, callback)
 {
+  console.log("commentman get comments");
   //get the globalComments
   db.get("comments:" + padId, function(err, comments)
   {
@@ -16,6 +17,7 @@ exports.getComments = function (padId, callback)
 
 exports.addComment = function(padId, data, callback)
 {
+  console.log("commentman addcomments");
   //create the new comment
   var commentId = "c-" + randomString(16);
 
@@ -29,8 +31,8 @@ exports.addComment = function(padId, data, callback)
 
     var comment = {
       "author": data.author,
-      "name": data.name, 
-      "text": data.text, 
+      "name": data.name,
+      "text": data.text,
       "timestamp": new Date().getTime()
     };
 
@@ -46,6 +48,7 @@ exports.addComment = function(padId, data, callback)
 
 exports.getCommentReplies = function (padId, callback)
 {
+  console.log("commentman getcommentReplies");
   //get the globalComments replies
   db.get("comment-replies:" + padId, function(err, replies)
   {
@@ -59,6 +62,7 @@ exports.getCommentReplies = function (padId, callback)
 
 exports.addCommentReply = function(padId, data, callback)
 {
+  console.log("commentman addcommentreply");
   //create the new reply replyid
   var replyId = "c-reply-" + randomString(16);
 
@@ -88,4 +92,3 @@ exports.addCommentReply = function(padId, data, callback)
     callback(null, replyId, reply);
   });
 };
-

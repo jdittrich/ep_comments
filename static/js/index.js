@@ -9,8 +9,11 @@ var cssFiles = ['ep_comments_page/static/css/comment.css'];
 /************************************************************************/
 /*                         ep_comments Plugin                           */
 /************************************************************************/
-// Container 
+// Container
 function ep_comments(context){
+
+  console.log("static index.js ep_comments");
+
   this.container  = null;
   this.padOuter   = null;
   this.padInner   = null;
@@ -21,6 +24,7 @@ function ep_comments(context){
   var loc = document.location;
   var port = loc.port == "" ? (loc.protocol == "https:" ? 443 : 80) : loc.port;
   var url = loc.protocol + "//" + loc.hostname + ":" + port + "/" + "comment";
+
   this.socket     = io.connect(url);
 
   this.padId      = clientVars.padId;
@@ -31,6 +35,7 @@ function ep_comments(context){
 
 // Init Etherpad plugin comment pads
 ep_comments.prototype.init = function(){
+  console.log("index.js prototype.init");
   var self = this;
   var ace = this.ace;
 
@@ -47,6 +52,8 @@ ep_comments.prototype.init = function(){
   });
 
   this.getCommentReplies(function (replies){
+    console.log("index.js getCommentReplies");
+
     if (!$.isEmptyObject(replies)){
       // console.log("collecting comment replies");
       self.commentReplies = replies;
@@ -57,6 +64,8 @@ ep_comments.prototype.init = function(){
 
   // Init add push event
   this.pushComment('add', function (commentId, comment){
+    console.log("index.js pushComment");
+
     self.setComment(commentId, comment);
     // console.log('pushComment', comment);
     window.setTimeout(function() {
@@ -79,7 +88,7 @@ ep_comments.prototype.init = function(){
                   if( count_comments > padComment.length ) {
                      window.setTimeout(function() {
                         self.collectComments();
-                        
+
                       }, 9000);
                   }
                 }, 3000);
@@ -89,15 +98,20 @@ ep_comments.prototype.init = function(){
     }, 300);
   });
 
-  // On click comment icon toolbar 
+  // On click comment icon toolbar
   $('.addComment').on('click', function(e){
+    console.log("index.js pushComment (klick on comment in toolbar)");
+
     $('iframe[name="ace_outer"]').contents().find('#comments').show();
     $('iframe[name="ace_outer"]').contents().find('#comments').addClass("active");
     e.preventDefault(); // stops focus from being lost
-    // If a new comment box doesn't already exist 
-    // Add a new comment and link it to the selection 
+    // If a new comment box doesn't already exist
+    // Add a new comment and link it to the selection
     // $('iframe[name="ace_outer"]').contents().find('#sidediv').removeClass('sidedivhidden');
-    if (self.container.find('#newComment').length == 0) self.addComment();
+    if (self.container.find('#newComment').length == 0){
+      self.addComment();
+    } //TODO if style
+
     // console.log("setting focus to .comment-content");
     $('iframe[name="ace_outer"]').contents().find('#comments').find('#newComment').show();
     $('iframe[name="ace_outer"]').contents().find('#comments').find('#newComment').addClass("visible").removeClass("hidden");
@@ -108,14 +122,15 @@ ep_comments.prototype.init = function(){
   $('iframe[name="ace_outer"]').contents().find("body")
     .append("<div class='comment-modal'><p class='comment-modal-name'></p><p class='comment-modal-comment'></p></div>");
 
-  // Listen to reply clicks
   this.container.on("click", ".comment-reply-button", function(e){
+  // Listen to reply clicks
     var commentId = $(this).parent()[0].id;
     $('iframe[name="ace_outer"]').contents().find("#"+commentId).append("<form class='comment-reply'><input class='comment-reply-input'><!--<input type=submit>--></form>");
   });
 
   // var socket = this.socket;
   this.container.on("submit", ".comment-reply", function(e){
+    console.log("index.js padExists");
     e.preventDefault();
     var data = self.getCommentData();
     data.commentId = $(this).parent()[0].id;
@@ -154,16 +169,18 @@ ep_comments.prototype.init = function(){
 
 };
 
-// Insert comments container on element use for linenumbers 
+// Insert comments container on element use for linenumbers
 ep_comments.prototype.findContainers = function(){
+  console.log("index.js prototype findcontainers");
   var padOuter = $('iframe[name="ace_outer"]').contents();
-  this.padOuter = padOuter;
-  this.padInner = padOuter.find('iframe[name="ace_inner"]');
-  this.outerBody = padOuter.find('#outerdocbody')
+  this.padOuter  = padOuter;
+  this.padInner  = padOuter.find('iframe[name="ace_inner"]');
+  this.outerBody = padOuter.find('#outerdocbody');
 };
 
 // Collect Comments and link text content to the comments div
 ep_comments.prototype.collectComments = function(callback){
+  console.log("index.js collect comments");
   var self        = this;
   var container   = this.container;
   var comments    = this.comments;
@@ -182,7 +199,11 @@ ep_comments.prototype.collectComments = function(callback){
 
     if (commentId === null) {
       var isAuthorClassName = /(?:^| )(a.[A-Za-z0-9]*)/.exec(cls);
-      if (isAuthorClassName) self.removeComment(isAuthorClassName[1], it);
+      if (isAuthorClassName){
+        self.removeComment(isAuthorClassName[1], it);
+        comment.log("self.removeComment", "commentId===null");
+      }
+
       return;
     }
     var commentId   = classCommentId[1];
@@ -203,7 +224,7 @@ ep_comments.prototype.collectComments = function(callback){
       }
 
     }
-    
+
     var prevCommentElm = commentElm.prev();
     var commentPos;
 
@@ -212,10 +233,10 @@ ep_comments.prototype.collectComments = function(callback){
     } else {
       var prevCommentPos = prevCommentElm.css('top');
       var prevCommentHeight = prevCommentElm.innerHeight();
-      
+
       commentPos = parseInt(prevCommentPos) + prevCommentHeight + 30;
     }
-    
+
     commentElm.css({ 'top': commentPos });
   });
 
@@ -230,7 +251,7 @@ ep_comments.prototype.collectComments = function(callback){
     // on hover we should show the reply option
   }).on("mouseout", ".sidebar-comment", function(e){
     var commentId = e.currentTarget.id;
-    var inner = $('iframe[name="ace_outer"]').contents().find('iframe[name="ace_inner"]');  
+    var inner = $('iframe[name="ace_outer"]').contents().find('iframe[name="ace_inner"]');
     inner.contents().find("head").append("<style>."+commentId+"{ color:black }</style>");
     // TODO this could potentially break ep_font_color
   });
@@ -267,7 +288,9 @@ ep_comments.prototype.collectCommentReplies = function(callback){
   $.each(this.commentReplies, function(replyId, replies){
     var commentId = replies.commentId;
     var existsAlready = $('iframe[name="ace_outer"]').contents().find('#'+replyId).length;
-    if(existsAlready) return;
+    if(existsAlready){
+      return; //changed if style
+    }
 
     replies.replyId = replyId;
     var content = $("#replyTemplate").tmpl(replies);
@@ -285,7 +308,7 @@ ep_comments.prototype.highlightComment = function(e){
     // sidebar view highlight
     commentElm.addClass('mouseover');
   }else{
-    var commentElm      = $('iframe[name="ace_outer"]').contents().find("#comments").find('#'+ commentId);
+    var commentElm = $('iframe[name="ace_outer"]').contents().find("#comments").find('#'+ commentId);
     $('iframe[name="ace_outer"]').contents().find('.comment-modal').show().css({
       left: e.clientX +"px",
       top: e.clientY + 25 +"px"
@@ -293,15 +316,17 @@ ep_comments.prototype.highlightComment = function(e){
     // hovering comment view
     $('iframe[name="ace_outer"]').contents().find('.comment-modal-comment').html(commentElm.html());
   }
-}
+};
 
 ep_comments.prototype.removeComment = function(className, id){
-  // console.log('remove comment', className, id);
-}
+
+   console.log('remove comment', className, id);
+};
 
 // Insert comment container in sidebar
 ep_comments.prototype.insertContainer = function(){
-  // Add comments 
+  console.log("index.js insertContainer");
+  // Add comments
   $('iframe[name="ace_outer"]').contents().find("#outerdocbody").prepend('<div id="comments"></div>');
   this.container = this.padOuter.find('#comments');
 };
@@ -332,6 +357,8 @@ ep_comments.prototype.insertNewComment = function(comment, callback){
   // Set the top of the form to be the same Y as the target Rep
   var ace = this.ace;
   ace.callWithAce(function (ace){
+
+
     var rep = ace.ace_getRep();
     // console.log("rep", rep); // doesn't fire twice
     var line = rep.lines.atIndex(rep.selStart[0]);
@@ -347,8 +374,10 @@ ep_comments.prototype.insertNewComment = function(comment, callback){
   },'getYofRep', true);
 };
 
-// Insert a comment node 
+// Insert a comment node
 ep_comments.prototype.insertComment = function(commentId, comment, index, isNew){
+  console.log("index.js insert comment","commentId:",commentId,"; index:",index);
+
   var template          = (isNew === true) ? 'newCommentTemplate' : 'commentsTemplate';
   var content           = null;
   var container         = this.container;
@@ -384,7 +413,7 @@ ep_comments.prototype.setYofComments = function(){
     var y = this.offsetTop;
     y = y-5;
     var commentId = /(?:^| )c-([A-Za-z0-9]*)/.exec(this.className); // classname is the ID of the comment
-    var commentEle = padOuter.find('#c-'+commentId[1]) // find the comment
+    var commentEle = padOuter.find('#c-'+commentId[1]); // find the comment
     commentEle.css("top", y+"px").show();
   });
 
@@ -392,6 +421,7 @@ ep_comments.prototype.setYofComments = function(){
 
 // Set comments content data
 ep_comments.prototype.setComments = function(comments){
+  console.log("index.js setComments","; comments:", comments);
   for(var commentId in comments){
     this.setComment(commentId, comments[commentId]);
   }
@@ -399,14 +429,18 @@ ep_comments.prototype.setComments = function(comments){
 
 // Set comment data
 ep_comments.prototype.setComment = function(commentId, comment){
+  console.log("index.js setComments","; commentId:", commentId, "; comment:", comment);
   var comments = this.comments;
   comment.date = prettyDate(comment.timestamp);
-  if (comments[commentId] == null) comments[commentId] = {};
+  if (comments[commentId] == null){
+    comments[commentId] = {};
+  }
   comments[commentId].data = comment;
 };
 
 // Get all comments
 ep_comments.prototype.getComments = function (callback){
+  console.log("index.js getComments","; callback:", callback);
   var req = { padId: this.padId };
 
   this.socket.emit('getComments', req, function (res){
@@ -426,23 +460,24 @@ ep_comments.prototype.getCommentReplies = function (callback){
 ep_comments.prototype.getCommentData = function (){
   var data = {};
 
-  // Insert comment data 
+  // Insert comment data
   data.padId              = this.padId;
   data.comment            = {};
   data.comment.author     = clientVars.userId;
   data.comment.name       = clientVars.userName;
   data.comment.timestamp  = new Date().getTime();
-  
+
   // Si le client est Anonyme
   if(data.comment.name === undefined){
     data.comment.name = clientVars.userAgent;
   }
 
   return data;
-}
+};
 
-// Add a pad comment 
+// Add a pad comment
 ep_comments.prototype.addComment = function (callback){
+  console.log("index.js addComments"," callback:", callback);
   var socket  = this.socket;
   var data    = this.getCommentData();
   var ace     = this.ace;
@@ -465,12 +500,13 @@ ep_comments.prototype.addComment = function (callback){
   // CAKE TODO This doesn't appear to get the Y right for the input field...
 
   this.insertNewComment(data, function (text, index){
+    console.log("insertNewComment");
     data.comment.text = text;
 
     // Save comment
     socket.emit('addComment', data, function (commentId, comment){
       comment.commentId = commentId;
-      
+
       //callback(commentId);
       ace.callWithAce(function (ace){
         // console.log('addComment :: ', commentId);
@@ -509,7 +545,7 @@ ep_comments.prototype.commentRepliesListen = function(){
 ep_comments.prototype.pushComment = function(eventType, callback){
   var socket = this.socket;
 
-//  console.error("eventType", eventType);
+  console.error("prototype.pushComment ","eventType", eventType);
 
   // On collaborator add a comment in the current pad
   if (eventType == 'add'){
@@ -520,7 +556,9 @@ ep_comments.prototype.pushComment = function(eventType, callback){
 
   // On collaborator delete a comment in the current pad
   else if (eventType == 'remove'){
+    console.log("prototype.pushComment remove");
     socket.on('pushRemoveComment', function (commentId){
+      console.log("prototype.pushComment socket remove");
       callback(commentId);
     });
   }
@@ -539,14 +577,18 @@ ep_comments.prototype.pushComment = function(eventType, callback){
 
 var hooks = {
 
-  // Init pad comments 
+  // Init pad comments
   postAceInit: function(hook, context){
-    if(!pad.plugins) pad.plugins = {};
+    if(!pad.plugins){
+      pad.plugins = {};//changed if style
+    }
     var Comments = new ep_comments(context);
     pad.plugins.ep_comments_page = Comments;
   },
 
   aceEditEvent: function(hook, context){
+    //Here is where the magic happens with deleting/showing comments etc.
+
     // Cake this bit is a bit rough..
     var padOuter = $('iframe[name="ace_outer"]').contents();
     // padOuter.find('#sidediv').removeClass("sidedivhidden"); // TEMPORARY to do removing authorship colors can add sidedivhidden class to sidesiv!
@@ -610,18 +652,18 @@ function prettyDate(time){
     list_choice = 2;
   }
   var i = 0, format;
-  while (format = time_formats[i++]) 
+  while (format = time_formats[i++]){ // conditional with assignment is a style to be avoided
     if (seconds < format[0]) {
       if (typeof format[2] == 'string')
         return format[list_choice];
       else
         return Math.floor(seconds / format[2]) + ' ' + format[1] + ' ' + token;
     }
+  }
   return time;
-};
- 
+}
+
 exports.aceEditorCSS          = hooks.aceEditorCSS;
 exports.postAceInit           = hooks.postAceInit;
 exports.aceAttribsToClasses   = hooks.aceAttribsToClasses;
 exports.aceEditEvent          = hooks.aceEditEvent;
-

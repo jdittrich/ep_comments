@@ -6,11 +6,11 @@ exports.socketio = function (hook_name, args, cb){
   var io = args.io;
   var pushComment;
   var padComment = io;
-  
+
   var commentSocket = io
   .of('/comment')
   .on('connection', function (socket) {
-    
+
     // Join the rooms
     socket.on('getComments', function (data, callback) {
       var padId = data.padId;
@@ -26,7 +26,7 @@ exports.socketio = function (hook_name, args, cb){
         callback(replies);
       });
     });
-    
+
     // On add events
     socket.on('addComment', function (data, callback) {
       var padId = data.padId;
@@ -92,13 +92,13 @@ exports.expressCreateServer = function (hook_name, args, cb) {
   app.get('/p/:pad/:rev?/add/comment/:name/:text', function(req, res, next) {
     var padId = req.params.pad;
     var revision = req.params.rev ? req.params.rev : null;
-    var data = { 
+    var data = {
       author: "empty",
       selection: "empty",
-      name: req.params.name, 
-      text: req.params.text 
+      name: req.params.name,
+      text: req.params.text
     };
-    
+
     comments.addPadComment(padId, data, revision, function(err, commentId) {
       res.contentType('text/x-json');
       res.send('{ "commentId": "'+ commentId +'" }');
