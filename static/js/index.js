@@ -592,22 +592,29 @@ var hooks = {
     // Cake this bit is a bit rough..
     var padOuter = $('iframe[name="ace_outer"]').contents();
     // padOuter.find('#sidediv').removeClass("sidedivhidden"); // TEMPORARY to do removing authorship colors can add sidedivhidden class to sidesiv!
-    if(!context.callstack.docTextChanged) return;
+    if(!context.callstack.docTextChanged) {return}; //style fix
+
     // for each comment
 
     // NOTE this is duplicate code because of the way this is written, ugh, this needs fixing
     var padInner = padOuter.find('iframe[name="ace_inner"]');
+    console.info("padInner=", padInner);//pad inner is where the text is.
+
     var inlineComments = padInner.contents().find(".comment");
+    console.info("inlineComments=", inlineComments); //all text nodes (comments spans; they have the .comment class)
+
+    console.info("padOuter comments=",padOuter.find("#comments"));//that selects the div which holds all the comments themselfes.
+
     padOuter.find("#comments").children().each(function(){
       // hide each outer comment
-      $(this).hide();
+      $(this).hide();//hide all other commnets
     });
-    $.each(inlineComments, function(){
-      var y = this.offsetTop;
-      var commentId = /(?:^| )c-([A-Za-z0-9]*)/.exec(this.className);
-      var commentEle = padOuter.find('#c-'+commentId[1]);
+    $.each(inlineComments, function(){ //re-show the outer comments again
+      var y = this.offsetTop; //position of the inline comment
+      var commentId = /(?:^| )c-([A-Za-z0-9]*)/.exec(this.className);//select the Id part of the class name of the inline comment
+      var commentEle = padOuter.find('#c-'+commentId[1]);//find the corresponding outer comment
       y = y-5;
-      commentEle.css("top", y+"px").show();
+      commentEle.css("top", y+"px").show(); //set position of the outer comment and show again. 
     });
   },
 
