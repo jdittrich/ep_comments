@@ -614,13 +614,14 @@ var hooks = {
       var commentId = /(?:^| )c-([A-Za-z0-9]*)/.exec(this.className);//select the Id part of the class name of the inline comment
       var commentEle = padOuter.find('#c-'+commentId[1]);//find the corresponding outer comment
       y = y-5;
-      commentEle.css("top", y+"px").show(); //set position of the outer comment and show again. 
+      commentEle.css("top", y+"px").show(); //set position of the outer comment and show again.
     });
   },
 
   // Insert comments classes
   aceAttribsToClasses: function(hook, context){
     if(context.key == 'comment') return ['comment', context.value];
+    console.log("aceAttribsToClasses hook:",hook, " context:", context);
   },
 
   aceEditorCSS: function(){
