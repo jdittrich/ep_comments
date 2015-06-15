@@ -766,7 +766,7 @@ ep_comments.prototype.addComment = function (callback){
   });
 
   // Write the text to the changeFrom form
-  $('iframe[name="ace_outer"]').contents().find(".comment-suggest-from").val(selectedText);
+  $('iframe[name="ace_outer"]').contents().find(".comment-suggest-from").html(selectedText);
 
 };
 
